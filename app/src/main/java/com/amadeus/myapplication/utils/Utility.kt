@@ -1,0 +1,22 @@
+package com.amadeus.myapplication.utils
+
+import com.amadeus.myapplication.models.WeatherDataItem
+import com.google.gson.Gson
+import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.*
+
+object Utility {
+
+
+    fun convertLongToTime(time: Long?): String {
+        if (time != null) {
+            val date = Date(time)
+            val format = SimpleDateFormat("dd MMM yyyy HH:mm")
+            return format.format(date)
+        } else {
+            return ""
+        }
+
+    }
+}
