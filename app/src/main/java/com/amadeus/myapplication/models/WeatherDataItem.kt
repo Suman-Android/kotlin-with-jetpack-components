@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "weather_table")
 data class WeatherDataItem(
     @PrimaryKey(autoGenerate = true)
-    val pageNo : Int,
-    val time: Int?,
+    val pageNo : Int=0,
+    val time: Int=0,
     val weather: List<Weather>?,
 
     @Embedded

@@ -2,43 +2,34 @@ package com.amadeus.myapplication.paging
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.amadeus.myapplication.R
 import com.amadeus.myapplication.databinding.ItemCityLayoutBinding
 import com.amadeus.myapplication.models.WeatherDataItem
 import com.amadeus.myapplication.utils.Utility
 import androidx.databinding.ViewDataBinding
+import com.amadeus.myapplication.models.WeatherItemUiState
+import com.amadeus.myapplication.utils.executeWithAction
 import javax.inject.Inject
 
 class WeatherPagingAdapter @Inject constructor() :
-    PagingDataAdapter<WeatherDataItem, WeatherPagingAdapter.WeatherViewHolder>(COMPARATOR) {
+    PagingDataAdapter<WeatherItemUiState, WeatherPagingAdapter.WeatherViewHolder>(COMPARATOR) {
 
     class WeatherViewHolder(private val binding: ItemCityLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(weatherDataItem: WeatherDataItem) {
+        fun bind(weatherItemUiState: WeatherItemUiState) {
             binding.apply {
-                textViewCity.text =
-                    weatherDataItem.city?.name + ", " + weatherDataItem.city?.country
-                textViewUpdatedAt.text =
-                    "Updated at " + Utility.convertLongToTime(weatherDataItem.time?.toLong())
-                textViewStatus.text = weatherDataItem?.weather?.get(0)?.main?.toString()
-                textViewTemp.text = weatherDataItem?.main?.temp.toString()
-                textViewMinTemp.text = "Min Temp:" + weatherDataItem?.main?.temp_min.toString()
-                textViewMaxtTemp.text = "Max Temp:" + weatherDataItem?.main?.temp_max.toString()
-                textViewSeaLevel.text =
-                    "Seal Level \n" + weatherDataItem?.main?.sea_level.toString()
-                textviewGroundLevel.text =
-                    "Pressure \n" + weatherDataItem?.main?.grnd_level.toString()
+                binding.executeWithAction {
+                    this.weatherItemUiState = weatherItemUiState
+                }
             }
         }
 
     }
 
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
-        holder.bind(getItem(position)!!)
+        getItem(position)?.let { weatherItemUIState -> holder.bind(weatherItemUIState) }
     }
 
 
@@ -50,24 +41,19 @@ class WeatherPagingAdapter @Inject constructor() :
     }
 
     companion object {
-        private val COMPARATOR = object : DiffUtil.ItemCallback<WeatherDataItem>() {
+        private val COMPARATOR = object : DiffUtil.ItemCallback<WeatherItemUiState>() {
             override fun areItemsTheSame(
-                oldItem: WeatherDataItem, newItem: WeatherDataItem
+                oldItem: WeatherItemUiState, newItem: WeatherItemUiState
             ): Boolean {
-                return oldItem?.city?.id == newItem?.city?.id
+                return oldItem?.getCityID() == newItem?.getCityID()
             }
 
             override fun areContentsTheSame(
-                oldItem: WeatherDataItem, newItem: WeatherDataItem
+                oldItem: WeatherItemUiState, newItem: WeatherItemUiState
             ): Boolean {
                 return oldItem == newItem
             }
         }
-    }
-
-    fun <T : ViewDataBinding> T.executeWithAction(action: T.() -> Unit) {
-        action()
-        executePendingBindings()
     }
 }
 

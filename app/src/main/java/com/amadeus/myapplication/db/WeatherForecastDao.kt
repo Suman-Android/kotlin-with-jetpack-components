@@ -19,6 +19,6 @@ interface WeatherForecastDao {
     @Query("SELECT COUNT(*) FROM weather_table")
     fun getCount(): Int
 
-    @Query("SELECT * FROM weather_table WHERE  name == :query")
-    fun searchCity(query : String): PagingSource<Int, WeatherDataItem>
+    @Query("SELECT * FROM weather_table WHERE  name LIKE '%' || :query || '%'")
+    fun searchCity(query: String): PagingSource<Int, WeatherDataItem>
 }
