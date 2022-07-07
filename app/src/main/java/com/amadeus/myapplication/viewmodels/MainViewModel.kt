@@ -7,9 +7,11 @@ import com.amadeus.myapplication.repository.WeatherForecastRepository
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.InputStream
 import javax.inject.Inject
+import com.amadeus.myapplication.models.WeatherItemUiState
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -28,7 +30,7 @@ class MainViewModel @Inject constructor(
         }
 
 
-    val newWeatherList = Pager(
+    val weatherItemsUiStates = Pager(
         PagingConfig(
             pageSize = 20,
             enablePlaceholders = false,
@@ -36,7 +38,10 @@ class MainViewModel @Inject constructor(
         )
     ) {
         pagingSource!!
-    }.flow.cachedIn(viewModelScope)
+    }.flow.map { pagingData ->
+        pagingData.map { userModel -> WeatherItemUiState(userModel) }
+    }.cachedIn(viewModelScope)
+
 
     fun saveWeatherData(weatherDataItem: WeatherDataItem) {
         viewModelScope.launch {

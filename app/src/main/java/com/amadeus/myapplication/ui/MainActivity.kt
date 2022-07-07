@@ -2,56 +2,73 @@ package com.amadeus.myapplication.ui
 
 import android.os.Bundle
 import android.view.Menu
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.lifecycle.Observer
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import com.amadeus.myapplication.R
+import com.amadeus.myapplication.common.footer.FooterAdapter
+import com.amadeus.myapplication.databinding.ActivityMainBinding
+import com.amadeus.myapplication.models.WeatherUiState
+import com.amadeus.myapplication.models.WeatherItemUiState
 import com.amadeus.myapplication.paging.WeatherPagingAdapter
+import com.amadeus.myapplication.utils.collect
+import com.amadeus.myapplication.utils.collectLast
+import com.amadeus.myapplication.utils.executeWithAction
 import com.amadeus.myapplication.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.map
 import java.io.InputStream
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     lateinit var mainViewModel: MainViewModel
+    private lateinit var binding: ActivityMainBinding
 
     @Inject
     lateinit var weatherPagingAdapter: WeatherPagingAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         val inputStream: InputStream = assets.open("weather_14.json")
-        val rvWeatherList = findViewById<RecyclerView>(R.id.rvWeatherList)
-        val progress = findViewById<ProgressBar>(R.id.progressBar)
-
-        rvWeatherList.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = weatherPagingAdapter
-        }
-
         mainViewModel.readDataFromFile(inputStream)
+        setBinding()
+        setAdapter()
+        setListener()
+        collectLast(mainViewModel.weatherItemsUiStates, ::setUsers)
+    }
 
-        lifecycleScope.launch {
-            mainViewModel.newWeatherList.collect {
-                progress.visibility = GONE
-                rvWeatherList.visibility = VISIBLE
-                weatherPagingAdapter.submitData(it)
-            }
+    private fun setBinding() {
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+    }
+
+    private fun setListener() {
+        binding.btnRetry.setOnClickListener { weatherPagingAdapter.retry() }
+    }
+
+    private fun setAdapter() {
+        collect(flow = weatherPagingAdapter.loadStateFlow
+            .distinctUntilChangedBy { it.source.refresh }
+            .map { it.refresh },
+            action = ::setUsersUiState
+        )
+        binding.rvWeatherList.adapter =
+            weatherPagingAdapter.withLoadStateFooter(FooterAdapter(weatherPagingAdapter::retry))
+    }
+
+    private fun setUsersUiState(loadState: LoadState) {
+        binding.executeWithAction {
+            usersUiState = WeatherUiState(loadState)
         }
+    }
+
+    private suspend fun setUsers(userItemsPagingData: PagingData<WeatherItemUiState>) {
+        weatherPagingAdapter.submitData(userItemsPagingData)
     }
 
 
