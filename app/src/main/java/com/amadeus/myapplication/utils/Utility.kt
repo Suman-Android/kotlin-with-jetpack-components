@@ -1,13 +1,9 @@
 package com.amadeus.myapplication.utils
 
-import com.amadeus.myapplication.models.WeatherDataItem
-import com.google.gson.Gson
-import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
 object Utility {
-
 
     fun convertLongToTime(time: Long?): String {
         if (time != null) {
