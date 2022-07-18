@@ -50,7 +50,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun readDataFromFile(inputStream: InputStream) {
-        var count: Int = 0
+        var count: Int
         viewModelScope.launch(Dispatchers.IO) {
             count = weatherRepository.getCount()
             if (count == 0) {

@@ -45,7 +45,7 @@ class WeatherPagingAdapter @Inject constructor() :
             override fun areItemsTheSame(
                 oldItem: WeatherItemUiState, newItem: WeatherItemUiState
             ): Boolean {
-                return oldItem?.getCityID() == newItem?.getCityID()
+                return oldItem.getCityID() == newItem.getCityID()
             }
 
             override fun areContentsTheSame(
