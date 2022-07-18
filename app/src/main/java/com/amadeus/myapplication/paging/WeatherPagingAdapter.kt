@@ -6,9 +6,6 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.amadeus.myapplication.databinding.ItemCityLayoutBinding
-import com.amadeus.myapplication.models.WeatherDataItem
-import com.amadeus.myapplication.utils.Utility
-import androidx.databinding.ViewDataBinding
 import com.amadeus.myapplication.models.WeatherItemUiState
 import com.amadeus.myapplication.utils.executeWithAction
 import javax.inject.Inject
@@ -45,7 +42,7 @@ class WeatherPagingAdapter @Inject constructor() :
             override fun areItemsTheSame(
                 oldItem: WeatherItemUiState, newItem: WeatherItemUiState
             ): Boolean {
-                return oldItem?.getCityID() == newItem?.getCityID()
+                return oldItem.getCityID() == newItem.getCityID()
             }
 
             override fun areContentsTheSame(
